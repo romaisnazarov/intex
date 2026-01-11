@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Storage;
 class UserController extends Controller
 {
     /**
+     * Display a listing of users
+     *
      * @return Factory|View
      */
     public function index(): Factory|View
@@ -24,7 +26,7 @@ class UserController extends Controller
 
             if ($userData) {
                 $user = json_decode($userData, true);
-                // Get avatar URL
+
                 if (isset($user['avatar']) && Storage::disk('public')->exists($user['avatar'])) {
                     $user['avatar_url'] = asset('storage/' . $user['avatar']);
                 } else {

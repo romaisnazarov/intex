@@ -15,12 +15,17 @@ class CleanupStaleUsersJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    /**
+     * Default stale time in minutes
+     */
+    private const DEFAULT_STALE_MINUTES = 1;
+
     protected int $staleMinutes;
 
     /**
      * @param int $staleMinutes
      */
-    public function __construct(int $staleMinutes = 1)
+    public function __construct(int $staleMinutes = self::DEFAULT_STALE_MINUTES)
     {
         $this->staleMinutes = $staleMinutes;
     }

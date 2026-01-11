@@ -13,6 +13,18 @@ use Illuminate\Support\Str;
 class RegistrationController extends Controller
 {
     /**
+     * Maximum avatar file size in bytes (2MB)
+     */
+    private const MAX_AVATAR_SIZE = 2 * 1024 * 1024;
+
+    /**
+     * User data expiration time in seconds (24 hours)
+     */
+    private const USER_DATA_EXPIRATION = 86400;
+
+    /**
+     * Register a new user
+     *
      * @param Request $request
      * @return JsonResponse
      */
@@ -37,7 +49,7 @@ class RegistrationController extends Controller
         if (Redis::exists($nicknameKey)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Данный nickname уже существует'
+                'message' => 'Такой nickname уже существует'
             ], 409);
         }
 
@@ -59,9 +71,9 @@ class RegistrationController extends Controller
             ];
 
             $userKey = "user:{$userId}";
-            Redis::setex($userKey, 86400, json_encode($userData)); // 24 hours
+            Redis::setex($userKey, self::USER_DATA_EXPIRATION, json_encode($userData));
 
-            Redis::setex($nicknameKey, 86400, $userId);
+            Redis::setex($nicknameKey, self::USER_DATA_EXPIRATION, $userId);
 
             $usersListKey = "users:list";
             Redis::zadd($usersListKey, now()->timestamp, $userId);
@@ -81,7 +93,7 @@ class RegistrationController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => 'Ошибка при обработке аватара: ' . $e->getMessage()
             ], 500);
         }
     }

@@ -1,59 +1,286 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Intex - Система регистрации пользователей
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Веб-приложение на Laravel для регистрации пользователей с аватарами. Данные хранятся в Redis, файлы аватаров - в файловой системе. Включает автоматическую очистку устаревших пользователей.
 
-## About Laravel
+## 🚀 Технологический стек
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Backend**: Laravel 12 (PHP 8.2)
+- **Frontend**: Tailwind CSS 4, Vite
+- **База данных**: MySQL 8.0
+- **Кэш/Очереди**: Redis 7
+- **Веб-сервер**: Nginx
+- **Контейнеризация**: Docker & Docker Compose
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## ✨ Основные возможности
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- ✅ Регистрация пользователей через API с nickname и аватаром (base64)
+- ✅ Валидация аватаров (формат, размер до 2MB)
+- ✅ Хранение данных пользователей в Redis
+- ✅ Хранение файлов аватаров в файловой системе
+- ✅ Проверка уникальности nickname
+- ✅ Автоматическая очистка устаревших пользователей через планировщик
+- ✅ Веб-интерфейс для просмотра зарегистрированных пользователей
+- ✅ Очереди задач на Redis
+- ✅ Rate limiting для API
 
-## Learning Laravel
+## 📋 Требования
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+- Docker и Docker Compose
+- Git
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## 🛠️ Установка и запуск
 
-## Laravel Sponsors
+### 1. Клонирование репозитория
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```bash
+git clone git@github.com:romaisnazarov/intex.git
+cd intex
+```
 
-### Premium Partners
+Или через HTTPS:
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+```bash
+git clone https://github.com/romaisnazarov/intex.git
+cd intex
+```
 
-## Contributing
+### 2. Настройка окружения
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Создайте файл `.env` на основе `.env.example`:
 
-## Code of Conduct
+```bash
+cp .env.example .env
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Настройте переменные окружения (опционально, есть значения по умолчанию):
 
-## Security Vulnerabilities
+```env
+APP_ENV=local
+APP_DEBUG=true
+APP_PORT=8000
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+DB_DATABASE=laravel
+DB_USERNAME=laravel
+DB_PASSWORD=laravel
+DB_ROOT_PASSWORD=root
+DB_PORT=3306
 
-## License
+REDIS_PORT=6379
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+# Настройки очистки устаревших пользователей
+CLEANUP_STALE_MINUTES=60        # Пользователи старше этого времени будут удалены
+CLEANUP_SCHEDULE_MINUTES=10     # Интервал запуска очистки (в минутах)
+```
+
+### 3. Запуск контейнеров
+
+```bash
+docker-compose up -d --build
+```
+
+Это запустит следующие сервисы:
+- `intex_app` - PHP-FPM приложение
+- `intex_nginx` - Nginx веб-сервер
+- `intex_mysql` - MySQL база данных
+- `intex_redis` - Redis сервер
+- `intex_node` - Node.js для сборки фронтенда
+- `intex_queue` - Worker для обработки очередей
+- `intex_scheduler` - Планировщик задач Laravel
+
+### 4. Установка зависимостей и настройка
+
+```bash
+# Установка PHP зависимостей
+docker-compose exec app composer install
+
+# Генерация ключа приложения
+docker-compose exec app php artisan key:generate
+
+# Выполнение миграций
+docker-compose exec app php artisan migrate
+
+# Создание символической ссылки для storage
+docker-compose exec app php artisan storage:link
+
+# Установка Node.js зависимостей и сборка фронтенда
+docker-compose exec node npm install
+docker-compose exec node npm run build
+```
+
+### 5. Доступ к приложению
+
+- **Веб-интерфейс**: http://localhost:8000
+- **API**: http://localhost:8000/api
+- **Список пользователей**: http://localhost:8000/users
+
+## 📡 API Документация
+
+### Регистрация пользователя
+
+**Endpoint**: `POST /api/register`
+
+**Rate Limit**: 60 запросов в минуту
+
+**Request Body**:
+```json
+{
+  "nickname": "user123",
+  "avatar": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..."
+}
+```
+
+**Параметры**:
+- `nickname` (required, string, max:255) - Уникальный никнейм пользователя
+- `avatar` (required, string) - Изображение в формате base64 с data URI (data:image/{type};base64,...)
+
+**Поддерживаемые форматы изображений**: JPEG, JPG, PNG, GIF
+
+**Максимальный размер файла**: 2 MB
+
+**Успешный ответ** (201):
+```json
+{
+  "success": true,
+  "message": "Пользователь успешно зарегестрирован",
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "nickname": "user123",
+    "avatar_url": "http://localhost:8000/storage/avatars/550e8400-e29b-41d4-a716-446655440000.png"
+  }
+}
+```
+
+**Ошибки**:
+- `422` - Ошибки валидации
+- `409` - Nickname уже существует
+- `500` - Внутренняя ошибка сервера
+
+## 🔧 Конфигурация
+
+### Переменные окружения
+
+| Переменная | Описание | По умолчанию |
+|------------|----------|--------------|
+| `APP_ENV` | Окружение приложения | `local` |
+| `APP_DEBUG` | Режим отладки | `true` |
+| `APP_PORT` | Порт веб-сервера | `8000` |
+| `DB_DATABASE` | Имя базы данных | `laravel` |
+| `DB_USERNAME` | Пользователь БД | `laravel` |
+| `DB_PASSWORD` | Пароль БД | `laravel` |
+| `CLEANUP_STALE_MINUTES` | Время жизни пользователя (минуты) | `60` |
+| `CLEANUP_SCHEDULE_MINUTES` | Интервал очистки (минуты) | `10` |
+
+### Хранение данных
+
+- **Пользователи**: Хранятся в Redis с TTL 24 часа
+- **Аватары**: Сохраняются в `storage/app/public/avatars/`
+- **Уникальность nickname**: Проверяется через Redis ключи
+
+### Автоматическая очистка
+
+Планировщик Laravel автоматически запускает задачу `CleanupStaleUsersJob` каждые 10 минут (настраивается через `CLEANUP_SCHEDULE_MINUTES`). Задача удаляет пользователей, которые были созданы более `CLEANUP_STALE_MINUTES` минут назад, включая их аватары из файловой системы.
+
+## 📁 Структура проекта
+
+```
+intex/
+├── app/
+│   ├── Http/
+│   │   └── Controllers/
+│   │       ├── Api/
+│   │       │   └── RegistrationController.php  # API регистрации
+│   │       └── UserController.php               # Контроллер для веб-интерфейса
+│   ├── Jobs/
+│   │   └── CleanupStaleUsersJob.php            # Задача очистки устаревших пользователей
+│   └── Models/
+│       └── User.php
+├── docker/
+│   ├── nginx/
+│   │   └── default.conf                        # Конфигурация Nginx
+│   └── php/
+│       └── local.ini                            # Настройки PHP
+├── routes/
+│   ├── api.php                                  # API маршруты
+│   └── web.php                                  # Веб маршруты
+├── docker-compose.yml                           # Конфигурация Docker Compose
+├── Dockerfile                                   # Образ PHP-FPM
+└── README.md
+```
+
+## 🧪 Тестирование
+
+Запуск тестов:
+
+```bash
+docker-compose exec app php artisan test
+```
+
+Или через composer:
+
+```bash
+docker-compose exec app composer test
+```
+
+## 🔍 Полезные команды
+
+### Просмотр логов
+
+```bash
+# Логи всех сервисов
+docker-compose logs -f
+
+# Логи конкретного сервиса
+docker-compose logs -f app
+docker-compose logs -f queue
+docker-compose logs -f scheduler
+```
+
+### Выполнение Artisan команд
+
+```bash
+docker-compose exec app php artisan <command>
+```
+
+### Доступ к Redis CLI
+
+```bash
+docker-compose exec redis redis-cli
+```
+
+### Доступ к MySQL
+
+```bash
+docker-compose exec mysql mysql -u laravel -p laravel
+```
+
+### Остановка контейнеров
+
+```bash
+docker-compose down
+```
+
+### Остановка с удалением volumes
+
+```bash
+docker-compose down -v
+```
+
+## 📝 Зависимости
+
+### PHP пакеты
+- `laravel/framework` ^12.0
+- `predis/predis` ^3.3 - Redis клиент
+- `crazybooot/base64-validation` ^1.0 - Валидация base64
+
+### Node.js пакеты
+- `vite` ^7.0.7 - Сборщик фронтенда
+- `tailwindcss` ^4.0.0 - CSS фреймворк
+- `laravel-vite-plugin` ^2.0.0 - Плагин для Laravel
+
+## 📄 Лицензия
+
+MIT License
+
+## 👤 Автор
+
+Проект разработан для демонстрации возможностей Laravel с Redis и Docker.
